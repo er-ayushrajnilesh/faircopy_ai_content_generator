@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------
+   Design tokens — Tailwind v4 reads custom properties declared inside
+   @theme and generates matching utilities automatically, e.g.
+   --color-ink-950 below produces bg-ink-950 / text-ink-950 / border-ink-950.
+   ------------------------------------------------------------------- */
+@theme {
+  --color-ink-950: #14161f;
+  --color-ink-800: #22253a;
+  --color-ink-600: #4a4e63;
+  --color-ink-400: #83879c;
+
+  --color-paper-50: #faf7ef;
+  --color-paper-100: #f4eee0;
+  --color-paper-200: #e9dfc7;
+
+  --color-gold-500: #d3a73e;
+  --color-gold-600: #b48a29;
+
+  --color-rust-500: #c1512e;
+  --color-rust-100: #f6e2da;
+
+  --font-display: "Fraunces", "Iowan Old Style", "Georgia", serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-paper-200);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-paper-50);
+    color: var(--color-ink-950);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--color-gold-500);
+    color: var(--color-ink-950);
+  }
+
+  /* Consistent, visible keyboard focus everywhere instead of relying on
+     each component to remember to add one. */
+  :focus-visible {
+    outline: 2px solid var(--color-gold-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Soft blinking caret used by the streaming output and the hero demo. */
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.animate-caret {
+  animation: caret-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
