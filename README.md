@@ -6,6 +6,12 @@ A full-stack app that turns a short prompt into a complete, ready-to-use draft �
 Prompt → content type, tone, length → Generate → live-streamed draft → copy / download
 ```
 
+## Live demo
+
+**[faircopy-ai-content-generator.onrender.com](https://faircopy-ai-content-generator.onrender.com)**
+
+> Hosted on Render's free tier, which spins down after 15 minutes of inactivity. If the app has been idle, the first load can take 30–60 seconds while it wakes back up — give it a moment rather than assuming it's broken. It responds normally once warm.
+
 ## Features
 
 - 10 content types (blog post, email, resume summary, cover letter, product description, advertisement, social caption, story, essay, text summary)
@@ -15,7 +21,7 @@ Prompt → content type, tone, length → Generate → live-streamed draft → c
 - Friendly error handling for empty prompts, network failures, timeouts, and AI service outages
 - Responsive from mobile to desktop
 - Backend-only API key — nothing secret ever reaches the browser
-- Single Docker image, ready for AWS App Runner (or any container host)
+- Single Docker image — deployed on Render, portable to any container host (AWS App Runner, Fly.io, etc.)
 
 ## Tech stack
 
@@ -25,7 +31,7 @@ Prompt → content type, tone, length → Generate → live-streamed draft → c
 | Backend | Node.js, Express 5 |
 | AI | Google Gemini API (`@google/genai` SDK), free tier — streamed via Server-Sent Events |
 | Containerization | Docker (multi-stage build) |
-| Deployment target | AWS App Runner |
+| Deployment | Render (Docker runtime) — the same image also runs on AWS App Runner, Fly.io, or any container host |
 
 ## Project structure
 
@@ -155,7 +161,20 @@ docker run --rm -p 3000:3000 --env-file .env ai-content-generator
 
 (`cp .env.example .env` at the project root first, and set `GEMINI_API_KEY`.) Open `http://localhost:3000` — the same Express server now serves both the built React app and the `/api` routes.
 
-## Deploying to AWS App Runner
+## Deploying
+
+### Render (what's live)
+
+1. Push this repo to GitHub.
+2. On [Render](https://render.com): **New → Web Service**, connect the repo. Render auto-detects the root `Dockerfile` and uses the Docker runtime — no build/start command configuration needed.
+3. Add environment variables under **Environment**:
+   - `GEMINI_API_KEY` — required, see above
+   - `ALLOWED_ORIGINS` — set to your Render URL once you have it, e.g. `https://your-service-name.onrender.com`. Needed because the browser sends a real `Origin` header for Vite's `crossorigin`-tagged module scripts even on same-origin requests, so the allowlist can't stay empty.
+4. Set the health check path to `/api/health`.
+5. Deploy. Render builds the Dockerfile and provisions a public HTTPS URL automatically.
+6. Known trade-off: the free instance type spins down after 15 minutes of inactivity (see "Live demo" above). Upgrade to a paid instance to remove this.
+
+### AWS App Runner (alternative)
 
 These are the general steps; consult the current [App Runner console](https://console.aws.amazon.com/apprunner) for exact screens, since AWS updates its UI more often than its underlying concepts.
 
@@ -176,7 +195,7 @@ These are the general steps; consult the current [App Runner console](https://co
 
 - The Gemini API key lives only in the server's environment and is never sent to the client.
 - `/api/generate` is rate-limited per IP, since there's no authentication layer in front of it (by design — see "Out of scope" below). This also helps stay within Gemini's free-tier request limits.
-- CORS is locked to an explicit allowlist; in production the frontend and API share an origin, so no cross-origin requests are needed at all.
+- CORS is locked to an explicit allowlist and scoped to `/api` only, so it never interferes with static asset loading; in production the frontend and API share an origin, so no cross-origin requests are needed at all.
 - Errors are translated into generic, friendly messages before reaching the client; the original error (with stack trace) is logged server-side only.
 - Gemini's free tier has a daily/per-minute request limit (it varies by model and changes over time — check [ai.google.dev/gemini-api/docs/rate-limits](https://ai.google.dev/gemini-api/docs/rate-limits) for current numbers). Hitting it returns a friendly "please wait a bit" message rather than a crash.
 
