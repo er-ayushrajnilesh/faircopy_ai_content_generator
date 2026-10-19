@@ -32,12 +32,9 @@ export const TONES = {
 };
 
 export const LENGTHS = {
-  // maxOutputTokens is padded above the raw word target to leave room for
-  // Gemini 3.x's "minimal" thinking level, which still uses some tokens
-  // from this same budget even though it can't be fully disabled.
-  Short: { words: "120-180", maxOutputTokens: 700 },
-  Medium: { words: "300-450", maxOutputTokens: 1200 },
-  Long: { words: "600-800", maxOutputTokens: 2200 },
+  Short: { words: "120-180", maxOutputTokens: 500 },
+  Medium: { words: "300-450", maxOutputTokens: 900 },
+  Long: { words: "600-800", maxOutputTokens: 1600 },
 };
 
 export const CONTENT_TYPE_OPTIONS = Object.keys(CONTENT_TYPES);
@@ -54,21 +51,29 @@ export function buildGenerationRequest({ prompt, type, tone, length }) {
   const toneGuidance = TONES[tone];
   const lengthConfig = LENGTHS[length];
 
+  const isStory = type === "Story";
+
   const instructions = [
     "You are a professional writing assistant inside a content generation tool.",
+    `The user has chosen the content type "${type}". Always produce exactly that format.`,
     `Write ${typeGuidance}`,
+    `If the user's request mentions another format (for example an email, letter, or post), treat that only as subject matter or as something that happens inside the piece. Never switch to that format.`,
     `Tone: write in a ${tone.toLowerCase()} tone — ${toneGuidance}.`,
     `Length: aim for approximately ${lengthConfig.words} words.`,
     "Formatting rules:",
     "- Write in clean plain text. Never use markdown symbols such as #, *, **, or _ for headings or emphasis.",
     "- Use natural paragraph breaks. Do not use bullet points unless the requested content type is naturally a list.",
     "- Output only the requested content itself: no introductory phrases like \"Here is your content:\", no closing remarks, and no surrounding quotation marks.",
-    "- If the request depends on specific facts, names, or data that were not provided, use a clearly bracketed placeholder such as [Company Name] rather than inventing specifics and presenting them as fact.",
+    isStory
+      ? "- This is fiction: invent character names, places, and details freely. Do not use bracketed placeholders, and do not write a greeting, subject line, or sign-off."
+      : "- If the request depends on specific facts, names, or data that were not provided, use a clearly bracketed placeholder such as [Company Name] rather than inventing specifics and presenting them as fact.",
   ].join("\n");
+
+  const inputLabel = type === "Text Summary" ? "Text to summarize" : "Request";
 
   return {
     instructions,
-    input: prompt,
+    input: `Content type: ${type}\n${inputLabel}: ${prompt}`,
     maxOutputTokens: lengthConfig.maxOutputTokens,
   };
 }
