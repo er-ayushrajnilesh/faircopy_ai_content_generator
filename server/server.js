@@ -22,7 +22,7 @@ app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
 app.use(requestLogger);
-app.use(cors(corsOptions));
+app.use("/api", cors(corsOptions));
 app.use(express.json({ limit: "100kb" }));
 
 const generateLimiter = rateLimit({
