@@ -1,6 +1,6 @@
 # Faircopy — AI Content Generation Tool
 
-A full-stack app that turns a short prompt into a complete, ready-to-use draft — blog posts, emails, ads, cover letters, and more — streamed live as it's written. Built with a React (Vite + Tailwind) frontend, an Express backend, and Google's Gemini API. No accounts, no database, no subscriptions, no cost — runs entirely on Gemini's free tier.
+A full-stack web app that turns a short prompt into a complete, ready-to-use draft — blog posts, emails, ads, cover letters, and more — streamed live as it's written. Built with a React (Vite + Tailwind) frontend, an Express backend, and Google's Gemini API. No accounts, no database, no subscriptions, no cost — runs entirely on Gemini's free tier.
 
 ```
 Prompt → content type, tone, length → Generate → live-streamed draft → copy / download
